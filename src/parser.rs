@@ -3,10 +3,20 @@ use crate::location::Location;
 use crate::lexer::{Token, TokenKind};
 
 #[derive(Debug, Clone)]
+pub struct Function {
+    name: Option<String>,
+    params: Param,
+    body: FunctionBody,
+}
+
+#[derive(Debug, Clone)]
 pub struct Param {
     name: String,
     loc: Location
 }
+
+#[derive(Debug, Clone)]
+pub struct FunctionBody(Vec<Object>);
 
 #[derive(Debug, Clone)]
 pub enum Object {
@@ -34,7 +44,7 @@ pub enum Object {
         loc: Location
     },
     Lambda {
-        value: (Vec<Param>, Vec<Object>),
+        value: FunctionBody,
         loc: Location
     },
     List {
