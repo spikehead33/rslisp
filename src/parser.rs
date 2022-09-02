@@ -44,7 +44,7 @@ pub enum Object {
         loc: Location
     },
     Lambda {
-        value: FunctionBody,
+        value: Function,
         loc: Location
     },
     List {
