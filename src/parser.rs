@@ -20,45 +20,41 @@ pub struct FunctionBody(Vec<Object>);
 #[derive(Debug, Clone)]
 pub enum Object {
     Void {
-        loc: Location
+        loc: Option<Location>,
     },
     Integer {
         value: i128,
-        loc: Location
+        loc: Option<Location>
     },
     Float {
         value: f64,
-        loc: Location
+        loc: Option<Location>
     },
     Bool {
         value: bool,
-        loc: Location
+        loc: Option<Location>
     },
     Str {
         value: String,
-        loc: Location
+        loc: Option<Location>
     },
     Symbol {
         value: String,
-        loc: Location
+        loc: Option<Location>
     },
     Lambda {
-<<<<<<< HEAD
-        value: Function,
-=======
         value: FunctionDefinition,
->>>>>>> 18c88ed (change the Object::Lambda value field type to Function type)
-        loc: Location
+        loc: Option<Location>
     },
     List {
         value: Vec<Object>,
-        loc: Location
+        loc: Option<Location>
     },
 }
 
 impl Object {
-    pub fn loc(&self) -> &Location {
-        match self {
+    pub fn loc(&self) -> Option<&Location> {
+        let location = match self {
             Object::Void { loc } => loc,
             Object::Integer { loc, .. } => loc,
             Object::Float { loc, .. } => loc,
@@ -67,7 +63,9 @@ impl Object {
             Object::Symbol { loc, .. } => loc,
             Object::Lambda { loc, .. } => loc,
             Object::List { loc, .. } => loc
-        }
+        };
+
+        location.as_ref()
     }
 }
 
@@ -89,7 +87,7 @@ impl std::fmt::Display for Object {
 /// Error
 /// 1. Unclosed List
 /// 2. Unexpected right parenthesis e.g. ), ())
-pub fn parse(tokens: &mut VecDeque<Token>) -> Result<VecDeque<Object>, String> {
+pub fn parse(tokens: &mut VecDeque<Token>) -> Result<Object, String> {
     // Assume the left parenthesis `(` has been taken
     let mut objects = VecDeque::new();
 
@@ -98,19 +96,23 @@ pub fn parse(tokens: &mut VecDeque<Token>) -> Result<VecDeque<Object>, String> {
         match token.kind() {
             &TokenKind::Comment(_) | TokenKind::IGNORE => continue,
             &TokenKind::UNKNOWN => return Err(format!("Unknown symbols found at {}", token.loc())),
-            &TokenKind::Float(n) => objects.push_back(Object::Float { value: n, loc }),
-            &TokenKind::Integer(n) => objects.push_back(Object::Integer { value: n, loc }),
-            &TokenKind::Str(ref s) => objects.push_back(Object::Str { value: s.clone(), loc }),
-            &TokenKind::Symbol(ref s) => objects.push_back(Object::Symbol { value: s.clone(), loc }),
+            &TokenKind::Float(n) => objects.push_back(Object::Float { value: n, loc: Some(loc) }),
+            &TokenKind::Integer(n) => objects.push_back(Object::Integer { value: n, loc: Some(loc) }),
+            &TokenKind::Str(ref s) => objects.push_back(Object::Str { value: s.clone(), loc: Some(loc) }),
+            &TokenKind::Symbol(ref s) => objects.push_back(Object::Symbol { value: s.clone(), loc: Some(loc) }),
             &TokenKind::LeftParenthesis => {
                 let list = parse_list(tokens)?;
-                objects.push_back(Object::List{ value: Vec::from_iter(list), loc });
+                objects.push_back(Object::List{ value: Vec::from_iter(list), loc: None });
             },
             &TokenKind::RightParenthesis => return Err(format!(
                 "Unexpected Right parenthesis `)` at {}", token.loc()))
         }
     }
-    Ok(objects)
+
+    Ok(Object::List {
+        value: Vec::from_iter(objects),
+        loc: Some(Location::new(Some("".to_string()), 1, 1))
+    })
 }
 
 pub fn parse_list(tokens: &mut VecDeque<Token>) -> Result<VecDeque<Object>, String> {
@@ -126,13 +128,13 @@ pub fn parse_list(tokens: &mut VecDeque<Token>) -> Result<VecDeque<Object>, Stri
         match token.kind() {
             &TokenKind::Comment(_) | TokenKind::IGNORE => continue,
             &TokenKind::UNKNOWN => return Err(format!("Unknown symbols found at {}", token.loc())),
-            &TokenKind::Float(n) => objects.push_back(Object::Float { value: n, loc }),
-            &TokenKind::Integer(n) => objects.push_back(Object::Integer { value: n, loc }),
-            &TokenKind::Str(ref s) => objects.push_back(Object::Str { value: s.clone(), loc }),
-            &TokenKind::Symbol(ref s) => objects.push_back(Object::Symbol { value: s.clone(), loc }),
+            &TokenKind::Float(n) => objects.push_back(Object::Float { value: n, loc: Some(loc) }),
+            &TokenKind::Integer(n) => objects.push_back(Object::Integer { value: n, loc: Some(loc) }),
+            &TokenKind::Str(ref s) => objects.push_back(Object::Str { value: s.clone(), loc: Some(loc) }),
+            &TokenKind::Symbol(ref s) => objects.push_back(Object::Symbol { value: s.clone(), loc: Some(loc) }),
             &TokenKind::LeftParenthesis => {
                 let list = parse_list(tokens)?;
-                objects.push_back(Object::List{ value: Vec::from_iter(list), loc });
+                objects.push_back(Object::List{ value: Vec::from_iter(list), loc: None });
             },
             &TokenKind::RightParenthesis => return Ok(objects)
         }
