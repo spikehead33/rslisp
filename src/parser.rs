@@ -3,8 +3,7 @@ use crate::location::Location;
 use crate::lexer::{Token, TokenKind};
 
 #[derive(Debug, Clone)]
-pub struct Function {
-    name: Option<String>,
+pub struct FunctionDefinition {
     params: Param,
     body: FunctionBody,
 }
@@ -44,7 +43,11 @@ pub enum Object {
         loc: Location
     },
     Lambda {
+<<<<<<< HEAD
         value: Function,
+=======
+        value: FunctionDefinition,
+>>>>>>> 18c88ed (change the Object::Lambda value field type to Function type)
         loc: Location
     },
     List {
