@@ -143,7 +143,7 @@ fn match_pattern(s: Span) -> IResult<Span, Token> {
     ))(s)?;
 
     let loc = Location::new(
-        None,  // filename will be set in the tokenizer
+        "".to_string(),  // filename will be set in the tokenizer
         pos.location_line() as usize,
         pos.location_offset() + 1
     );

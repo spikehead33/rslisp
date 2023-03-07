@@ -4,18 +4,24 @@ use crate::lexer::{Token, TokenKind};
 
 #[derive(Debug, Clone)]
 pub struct FunctionDefinition {
-    params: Param,
-    body: FunctionBody,
+    pub params: Vec<Param>,
+    pub body: FunctionBody,
 }
 
 #[derive(Debug, Clone)]
 pub struct Param {
-    name: String,
-    loc: Location
+    pub kind: ParamKind,
+    pub loc: Option<Location>
 }
 
 #[derive(Debug, Clone)]
-pub struct FunctionBody(Vec<Object>);
+pub enum ParamKind {
+    Named(String),
+    Variadic,
+}
+
+#[derive(Debug, Clone)]
+pub struct FunctionBody(pub Vec<Object>);
 
 #[derive(Debug, Clone)]
 pub enum Object {
@@ -50,6 +56,10 @@ pub enum Object {
         value: Vec<Object>,
         loc: Option<Location>
     },
+    Module {
+        value: Vec<Object>,
+        loc: Option<Location>
+    }
 }
 
 impl Object {
@@ -62,7 +72,8 @@ impl Object {
             Object::Str { loc, .. } => loc,
             Object::Symbol { loc, .. } => loc,
             Object::Lambda { loc, .. } => loc,
-            Object::List { loc, .. } => loc
+            Object::List { loc, .. } => loc,
+            Object::Module { loc, .. } => loc,
         };
 
         location.as_ref()
@@ -79,7 +90,8 @@ impl std::fmt::Display for Object {
             Object::Str { value, .. } => write!(f, "{}", value),
             Object::Symbol { value, .. } => write!(f, "{}", value),
             Object::Lambda { value, .. } => write!(f, "{:?}", value),
-            Object::List { value, .. } => write!(f, "{:?}", value)
+            Object::List { value, .. } => write!(f, "{:?}", value),
+            Object::Module { value, .. } => write!(f, "{:?}", value),
         }
     }
 }
@@ -109,9 +121,9 @@ pub fn parse(tokens: &mut VecDeque<Token>) -> Result<Object, String> {
         }
     }
 
-    Ok(Object::List {
+    Ok(Object::Module {
         value: Vec::from_iter(objects),
-        loc: Some(Location::new(Some("".to_string()), 1, 1))
+        loc: Some(Location::new("".to_string(), 0, 0))
     })
 }
 
@@ -167,7 +179,6 @@ mod tests {
         let prog = "(define x 10)\n(define add-func (lambda (x y z) (+ x y z)))";
         let (_, mut tokens) = tokenize("parser_test.rs", prog).unwrap();
         let test = parse(&mut tokens);
-        println!("{:#?}", test);
         assert!(test.is_ok());
     }
 }

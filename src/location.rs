@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, PartialEq)]
 pub struct Location {
-    filename: Option<String>,
+    filename: String,
     rol: usize,
     col: usize
 }
 
 impl Location {
-    pub fn new(filename: Option<String>, rol: usize, col: usize) -> Self {
+    pub fn new(filename: String, rol: usize, col: usize) -> Self {
         Self {
             filename,
             rol,
@@ -15,15 +15,11 @@ impl Location {
     }
 
     pub fn set_filename(&mut self, s: String) {
-        self.filename = Some(s);
+        self.filename = s;
     }
 
-    pub fn filename(&self) -> Option<&str> {
-        if let Some(s) = &self.filename {
-            Some(s.as_str())
-        } else {
-            None
-        }
+    pub fn filename(&self) -> &str {
+        &self.filename.as_str()
     }
 
     pub fn rol(&self) -> usize {
